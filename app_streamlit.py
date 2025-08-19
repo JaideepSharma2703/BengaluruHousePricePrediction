@@ -4,20 +4,30 @@ from pathlib import Path
 import joblib
 import pandas as pd
 import streamlit as st
+import os
+import requests
 
 BASE_DIR = Path(__file__).resolve().parent
-MODEL_PATH = BASE_DIR / "models" / "bhp_model.joblib"
+MODEL_PATH = BASE_DIR / "models" / "bhp_model_compressed.joblib"
 DATA_PATH = BASE_DIR / "data" / "Bengaluru_House_Data.csv"
+
+MODEL_URL = "https://drive.google.com/uc?export=download&id=14tcnjOR_y5zM97-w5ziynETI-IdxEYcH"
 
 st.set_page_config(page_title="Bengaluru House Price Prediction", page_icon="🏠")
 st.title("🏠 Bengaluru House Price Prediction")
 st.caption("Enter property details to estimate price (Lakhs).")
 
+
+
 @st.cache_resource
 def load_model():
     if not MODEL_PATH.exists():
-        st.error("Model not found. Please run training first: `python train.py`.")
-        st.stop()
+        st.info("Downloading model...")
+        MODEL_PATH.parent.mkdir(exist_ok=True)
+        r = requests.get(MODEL_URL, stream=True)
+        with open(MODEL_PATH, "wb") as f:
+            for chunk in r.iter_content(chunk_size=8192):
+                f.write(chunk)
     return joblib.load(MODEL_PATH)
 
 @st.cache_data
