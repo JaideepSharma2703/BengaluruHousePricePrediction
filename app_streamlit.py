@@ -41,13 +41,15 @@ def load_locations():
 
 model = load_model()
 locations = load_locations()
+bhk_options = list(range(1,13))
+bath_options = list(range(1,9))
 
 col1, col2 = st.columns(2)
 with col1:
     total_sqft = st.number_input("Total Sqft", min_value=200, max_value=20000, value=1200, step=50)
-    bhk = st.number_input("BHK", min_value=1, max_value=12, value=2, step=1)
+    bhk = st.selectbox("BHK" , options=bhk_options , index = 1)
 with col2:
-    bath = st.number_input("Bathrooms", min_value=1, max_value=9, value=2, step=1)
+    bath = st.selectbox("Bathrooms", options=bath_options , index = 1)
     location = st.selectbox("Location", options=locations, index=(locations.index("Whitefield") if "Whitefield" in locations else 0))
 
 if st.button("Predict Price"):
