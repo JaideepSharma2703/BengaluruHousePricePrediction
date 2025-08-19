@@ -47,9 +47,9 @@ bath_options = list(range(1,9))
 col1, col2 = st.columns(2)
 with col1:
     total_sqft = st.number_input("Total Sqft", min_value=200, max_value=20000, value=1200, step=50)
-    bhk = st.selectbox("BHK" , options=bhk_options , index = 1)
+    bhk = st.selectbox("BHK" , options=bhk_options , index = 0)
 with col2:
-    bath = st.selectbox("Bathrooms", options=bath_options , index = 1)
+    bath = st.selectbox("Bathrooms", options=bath_options , index = 0)
     location = st.selectbox("Location", options=locations, index=(locations.index("Whitefield") if "Whitefield" in locations else 0))
 
 if st.button("Predict Price"):
