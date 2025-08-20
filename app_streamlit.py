@@ -7,7 +7,6 @@ import streamlit as st
 import os
 import requests
 
-from sklearn.externals.array_api_compat.torch import result_type
 
 BASE_DIR = Path(__file__).resolve().parent
 MODEL_PATH = BASE_DIR / "models" / "bhp_model_compressed.joblib"
