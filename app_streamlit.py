@@ -87,7 +87,7 @@ if page == "Prediction":
         except Exception as e:
             st.error(f"Error: {e}")
 
-    elif page == "Health Check":
+elif page == "Health Check":
         st.title("🩺 API Health Status")
         try:
             res = requests.get("http://127.0.0.1:5000/health")
@@ -98,7 +98,7 @@ if page == "Prediction":
         except Exception as e:
             st.error(f"Failed to reach API: {e}")
 
-    elif page == "Model Info":
+elif page == "Model Info":
         st.title("ℹ️ Model Information.")
         try:
             res = requests.get("http://127.0.0.1:5000/model_info")
