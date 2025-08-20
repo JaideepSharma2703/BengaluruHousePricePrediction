@@ -7,6 +7,8 @@ import streamlit as st
 import os
 import requests
 
+from sklearn.externals.array_api_compat.torch import result_type
+
 BASE_DIR = Path(__file__).resolve().parent
 MODEL_PATH = BASE_DIR / "models" / "bhp_model_compressed.joblib"
 DATA_PATH = BASE_DIR / "data" / "Bengaluru_House_Data.csv"
@@ -44,20 +46,70 @@ locations = load_locations()
 bhk_options = list(range(1,13))
 bath_options = list(range(1,9))
 
-col1, col2 = st.columns(2)
-with col1:
-    total_sqft = st.number_input("Total Sqft", min_value=200, max_value=20000, value=1200, step=50)
-    bhk = st.selectbox("BHK" , options=bhk_options , index = 0)
-with col2:
-    bath = st.selectbox("Bathrooms", options=bath_options , index = 0)
-    location = st.selectbox("Location", options=locations, index=(locations.index("Whitefield") if "Whitefield" in locations else 0))
+# Sidebar Navigation
+st.sidebar.header("Navigation")
+page = st.sidebar.radio("Go to", ["Prediction" , "Health Check" , "Model Info"])
 
-if st.button("Predict Price"):
-    X = pd.DataFrame([{
-        "total_sqft": float(total_sqft),
-        "bhk": float(bhk),
-        "bath": float(bath),
-        "location": str(location)
-    }])
-    price = float(model.predict(X)[0])
-    st.success(f"Estimated Price: ₹ {price:.2f} Lakhs")
+#Page Routing
+if page == "Prediction":
+    st.title("🏠 Bengaluru House Price Prediction")
+
+    col1, col2 = st.columns(2)
+    with col1:
+        total_sqft = st.number_input("Total Sqft", min_value=200, max_value=20000, value=1200, step=50)
+        bhk = st.selectbox("BHK" , options=bhk_options , index = 0)
+    with col2:
+        bath = st.selectbox("Bathrooms", options=bath_options , index = 0)
+        location = st.selectbox("Location", options=locations, index=(locations.index("Whitefield") if "Whitefield" in locations else 0))
+
+    if st.button("Predict Price"):
+        try:
+            """X = pd.DataFrame([{
+                "total_sqft": float(total_sqft),
+                "bhk": float(bhk),
+                "bath": float(bath),
+                "location": str(location)
+            }])"""
+            data  = {
+                "total_sqft": total_sqft,
+                "bhk": bhk,
+                "bath": bath,
+                "location": location
+            }
+            response = requests.post("http://127.0.0.1:5000/predict", json=data)
+
+            if response.status_code == 200:
+                result =  response.json()
+                price = result.get("predicted_price")
+                "price = float(model.predict(X)[0])"
+                st.success(f"Estimated Price: ₹ {price:.2f} Lakhs")
+            else:
+                st.error("Prediction failed. Please try again.")
+
+        except Exception as e:
+            st.error(f"Error: {e}")
+
+    elif page == "Health Check":
+        st.title("🩺 API Health Status")
+        try:
+            res = requests.get("http://127.0.0.1:5000/health")
+            if res.status_code == 200:
+                st.success(f"{res.json()['status']}")
+            else:
+                st.error("API is not healthy.")
+        except Exception as e:
+            st.error(f"Failed to reach API: {e}")
+
+    elif page == "Model Info":
+        st.title("ℹ️ Model Information.")
+        try:
+            res = requests.get("http://127.0.0.1:5000/model_info")
+            if res.status_code == 200:
+                info= res.json()
+                st.json(info)
+            else:
+                st.error("Failed to fetch model info.")
+        except Exception as e:
+            st.error(f"Error : {e}")
+
+
