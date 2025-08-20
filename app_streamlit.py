@@ -51,7 +51,6 @@ page = st.sidebar.radio("Go to", ["Prediction" , "Health Check" , "Model Info"])
 
 #Page Routing
 if page == "Prediction":
-    st.title("🏠 Bengaluru House Price Prediction")
 
     col1, col2 = st.columns(2)
     with col1:
