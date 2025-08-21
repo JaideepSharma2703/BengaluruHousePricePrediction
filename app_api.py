@@ -17,8 +17,19 @@ def get_model():
     """Load the model only once when needed."""
     global pipe
     if pipe is None:
+        if not os.path.exists(MODEL_PATH):
+            raise FileNotFoundError(f"Model not found at {MODEL_PATH}")
         pipe = joblib.load(MODEL_PATH)
     return pipe
+
+
+@app.route("/")
+def home():
+    return jsonify({
+        "message": "Welcome to Bengaluru House Price Prediction API 🚀",
+        "endpoints": ["/health", "/predict", "/locations", "/model_info"]
+    })
+
 
 @app.route("/predict", methods=["POST"])
 def predict():
@@ -41,6 +52,7 @@ def predict():
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
 
 @app.route("/locations", methods=["GET"])
 def get_locations():
@@ -68,12 +80,14 @@ def get_locations():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+
 @app.route("/health", methods=["GET"])
 def health():
     return jsonify({
         "status": "OK",
         "message": "API is up and running successfully!!"
     }), 200
+
 
 @app.route("/model_info", methods=["GET"])
 def get_model_info():
@@ -92,6 +106,7 @@ def get_model_info():
         return jsonify(info), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
