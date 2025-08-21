@@ -41,10 +41,10 @@ def debug_files():
 def debug_model():
     try:
         model = get_model()
-        steps = list(model.named_steps.keys())
+        steps = list(model.named_steps.keys()) if hasattr(model, "named_steps") else "No named_steps"
         return jsonify({
             "model_type": str(type(model)),
-            "steps": steps
+            "steps": str(steps)
         })
     except Exception as e:
         return jsonify({"error": str(e)})
