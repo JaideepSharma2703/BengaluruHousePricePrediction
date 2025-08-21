@@ -10,7 +10,32 @@ import traceback
 BASE_DIR = Path(__file__).resolve().parent
 MODEL_PATH = BASE_DIR / "models" / "bhp_model_compressed.joblib"
 
+print("MODEL_PATH -> " , MODEL_PATH)
+print("MODEL_EXISTS? ->" , MODEL_PATH.exists())
+
 app = Flask(__name__)
+
+
+@app.route("/debug-files", methods=["GET"])
+def debug_files():
+    try:
+        base_dir = Path(__file__).resolve().parent
+        models_dir = base_dir / "models"
+
+        # List all files inside /models
+        if models_dir.exists():
+            files = os.listdir(models_dir)
+        else:
+            files = ["❌ models directory not found"]
+
+        return jsonify({
+            "base_dir": str(base_dir),
+            "model_path": str(MODEL_PATH),
+            "model_exists": MODEL_PATH.exists(),
+            "models_dir_files": files
+        })
+    except Exception as e:
+        return jsonify({"error": str(e)})
 
 #cache variable
 _cached_model = None
