@@ -37,6 +37,18 @@ def debug_files():
     except Exception as e:
         return jsonify({"error": str(e)})
 
+@app.route("/debug-model", methods=["GET"])
+def debug_model():
+    try:
+        model = get_model()
+        steps = list(model.named_steps.keys())
+        return jsonify({
+            "model_type": str(type(model)),
+            "steps": steps
+        })
+    except Exception as e:
+        return jsonify({"error": str(e)})
+
 #cache variable
 _cached_model = None
 
