@@ -4,6 +4,7 @@ import pandas as pd
 from pathlib import Path
 import os
 import traceback
+import pickle
 
 # Paths
 BASE_DIR = Path(__file__).resolve().parent
@@ -15,8 +16,21 @@ app = Flask(__name__)
 pipe = None
 
 def get_model():
+    _cached_model = None
+
     """Load the model only once when needed."""
+
+    global _cached_model
+    if _cached_model is None:
+        print("Loading model from file...")
+        with open("model.pkl , rb") as f:
+            _cached_model = pickle.load(f)
+    else:
+        print("Using cached model...")
+        return _cached_model
+
     global pipe
+
     if pipe is None:
         if not os.path.exists(MODEL_PATH):
             raise FileNotFoundError(f"Model not found at {MODEL_PATH}")
@@ -63,6 +77,7 @@ def predict():
 @app.route("/locations", methods=["GET"])
 def get_locations():
     try:
+        print("Loading model...")
         model = get_model()
         print("Model Loaded : " , model)
 
