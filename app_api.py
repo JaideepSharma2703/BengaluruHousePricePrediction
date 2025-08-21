@@ -125,41 +125,64 @@ def predict():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-
 @app.route("/locations", methods=["GET"])
 def get_locations():
     try:
-        print("Loading model...")
+        print("🔍 /locations endpoint hit")
+
+        # Load model
         model = get_model()
-        print("Model Loaded : " , model)
+        print("✅ Model Loaded:", model)
 
+        # Show pipeline steps
+        if not hasattr(model, "named_steps"):
+            return jsonify({"error": "Model has no named_steps (not a Pipeline?)"}), 500
+        print("📌 Model steps:", list(model.named_steps.keys()))
+
+        # Get preprocessor
+        if "pre" not in model.named_steps:
+            return jsonify({"error": "No 'pre' step found in model pipeline"}), 500
         preprocessor = model.named_steps["pre"]
-        if preprocessor is None:
-            return jsonify({"error": "No 'pre' step in model"}), 500
+        print("✅ Found preprocessor step")
 
-        print("preprocessor : ", preprocessor)
+        # Inspect transformers inside preprocessor
+        if not hasattr(preprocessor, "transformers_"):
+            return jsonify({"error": "Preprocessor has no transformers_"}), 500
+        print("📌 Preprocessor transformers:", preprocessor.transformers_)
 
+        # Find categorical transformer
         cat_transformer = None
         for name, transformer, columns in preprocessor.transformers_:
+            print(f"🔎 Checking transformer: {name}, columns={columns}")
             if name == "cat":
                 cat_transformer = transformer
+                print("✅ Found categorical transformer:", cat_transformer)
                 break
 
-        if cat_transformer is None or not hasattr(cat_transformer, "named_steps"):
-            return jsonify({"error": "Categorical transformer not found"}), 500
+        if cat_transformer is None:
+            return jsonify({"error": "Categorical transformer not found (check its name)"}), 500
 
+        # Inspect categorical pipeline steps
+        if not hasattr(cat_transformer, "named_steps"):
+            return jsonify({"error": "Categorical transformer has no named_steps"}), 500
+        print("📌 Cat transformer steps:", list(cat_transformer.named_steps.keys()))
+
+        # Get OneHotEncoder
+        if "ohe" not in cat_transformer.named_steps:
+            return jsonify({"error": "No 'ohe' step found in categorical transformer"}), 500
         ohe = cat_transformer.named_steps["ohe"]
+        print("✅ Found OneHotEncoder:", ohe)
 
-        if ohe is None:
-            return jsonify({"error": "No OneHotEncoder in 'cat' transformer"}), 500
-
+        # Extract locations
         if hasattr(ohe, "categories_"):
             locations = list(ohe.categories_[0])
+            print("✅ Extracted locations:", locations)
             return jsonify({"locations": locations})
         else:
             return jsonify({"error": "OneHotEncoder is not fitted"}), 500
 
     except Exception as e:
+        print("❌ Exception in /locations:", str(e))
         return jsonify({"error": str(e)}), 500
 
 
