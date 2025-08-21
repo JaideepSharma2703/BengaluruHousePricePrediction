@@ -4,7 +4,7 @@ import pandas as pd
 from pathlib import Path
 import os
 import traceback
-import pickle
+
 
 # Paths
 BASE_DIR = Path(__file__).resolve().parent
@@ -12,31 +12,22 @@ MODEL_PATH = BASE_DIR / "models" / "bhp_model_compressed.joblib"
 
 app = Flask(__name__)
 
-# Lazy-loaded model
-pipe = None
+#cache variable
 _cached_model = None
 
 def get_model():
     """Load the model only once when needed."""
-
     global _cached_model
 
     if _cached_model is None:
-        print("Loading model from file...")
-        with open("model.pkl , rb") as f:
-            _cached_model = pickle.load(f)
-    else:
-        print("Using cached model...")
-        return _cached_model
-
-
-    global pipe
-
-    if pipe is None:
-        if not os.path.exists(MODEL_PATH):
+        print("Loading model from file...")  # Runs only first time
+        if not MODEL_PATH.exists():
             raise FileNotFoundError(f"Model not found at {MODEL_PATH}")
-        pipe = joblib.load(MODEL_PATH)
-    return pipe
+        _cached_model = joblib.load(MODEL_PATH)
+    else:
+        print("Using cached model...")       # Runs every other time
+
+    return _cached_model
 
 
 @app.route("/")
