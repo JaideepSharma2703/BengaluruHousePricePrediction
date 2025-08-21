@@ -14,13 +14,13 @@ app = Flask(__name__)
 
 # Lazy-loaded model
 pipe = None
+_cached_model = None
 
 def get_model():
-    _cached_model = None
-
     """Load the model only once when needed."""
 
     global _cached_model
+
     if _cached_model is None:
         print("Loading model from file...")
         with open("model.pkl , rb") as f:
@@ -28,6 +28,7 @@ def get_model():
     else:
         print("Using cached model...")
         return _cached_model
+
 
     global pipe
 
