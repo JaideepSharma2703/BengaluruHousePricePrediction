@@ -26,7 +26,12 @@ def get_model():
 @app.route("/")
 def home():
     return jsonify({
+        "Status": "OK",
         "message": "Welcome to Bengaluru House Price Prediction API 🚀",
+        "routes" : {
+            "/health" : "Check health status",
+            "/predict" : "Send JSON with features to get predictions",
+        },
         "endpoints": ["/health", "/predict", "/locations", "/model_info"]
     })
 
