@@ -37,6 +37,29 @@ def debug_files():
     except Exception as e:
         return jsonify({"error": str(e)})
 
+@app.route("/test-model", methods=["GET"])
+def test_model():
+    try:
+        import os
+        from pathlib import Path
+        import joblib
+
+        path = Path(__file__).resolve().parent / "models" / "bhp_model_compressed.joblib"
+        exists = path.exists()
+
+        if not exists:
+            return jsonify({"status": "not found", "path": str(path)})
+
+        # Try loading
+        model = joblib.load(path)
+        return jsonify({
+            "status": "loaded",
+            "model_type": str(type(model)),
+            "steps_attr": hasattr(model, "named_steps")
+        })
+    except Exception as e:
+        return jsonify({"status": "error", "error": str(e)})
+
 @app.route("/debug-model", methods=["GET"])
 def debug_model():
     try:
