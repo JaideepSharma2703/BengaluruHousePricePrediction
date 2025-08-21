@@ -3,6 +3,7 @@ import joblib
 import pandas as pd
 from pathlib import Path
 import os
+import traceback
 
 # Paths
 BASE_DIR = Path(__file__).resolve().parent
@@ -63,7 +64,13 @@ def predict():
 def get_locations():
     try:
         model = get_model()
+        print("Model Loaded : " , model)
+
         preprocessor = model.named_steps["pre"]
+        if preprocessor is None:
+            return jsonify({"error": "No 'pre' step in model"}), 500
+
+        print("preprocessor : ", preprocessor)
 
         cat_transformer = None
         for name, transformer, columns in preprocessor.transformers_:
@@ -75,6 +82,9 @@ def get_locations():
             return jsonify({"error": "Categorical transformer not found"}), 500
 
         ohe = cat_transformer.named_steps["ohe"]
+
+        if ohe is None:
+            return jsonify({"error": "No OneHotEncoder in 'cat' transformer"}), 500
 
         if hasattr(ohe, "categories_"):
             locations = list(ohe.categories_[0])
@@ -109,7 +119,9 @@ def get_model_info():
             "status": "Model Loaded Successfully!!",
         }
         return jsonify(info), 200
+
     except Exception as e:
+        print("error in /locations" ,traceback.format_exc())
         return jsonify({"error": str(e)}), 500
 
 
